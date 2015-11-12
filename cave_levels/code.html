@@ -1,0 +1,314 @@
+<!--
+ ! Excerpted from "3D Game Programming for Kids",
+ ! published by The Pragmatic Bookshelf.
+ ! Copyrights apply to this code. It may not be used to create training material, 
+ ! courses, books, articles, and the like. Contact us if you are in doubt.
+ ! We make no guarantees that this code is fit for any purpose. 
+ ! Visit http://www.pragmaticprogrammer.com/titles/csjava for more book information.
+-->
+<body></body>
+<script src="http://gamingJS.com/Three.js"></script>
+<script src="http://gamingJS.com/physi.js"></script>
+<script src="http://gamingJS.com/ChromeFixes.js"></script>
+<script src="http://gamingJS.com/Scoreboard.js"></script>
+<script src="http://gamingJS.com/Mouse.js"></script>
+
+<script>
+  // Physics settings
+  Physijs.scripts.ammo = 'http://gamingJS.com/ammo.js';
+  Physijs.scripts.worker = 'http://gamingJS.com/physijs_worker.js';
+
+  // This is where stuff in our game will happen:
+  var scene = new Physijs.Scene({ fixedTimeStep: 2 / 60 });
+  scene.setGravity(new THREE.Vector3( 0, -100, 0 ));
+
+  // This is what sees the stuff:
+  //var aspect_ratio = window.innerWidth / window.innerHeight;
+  //var camera = new THREE.PerspectiveCamera(75, aspect_ratio, 1, 10000);
+  var width = window.innerWidth,
+      height = window.innerHeight;
+  var camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1e6 );
+
+  camera.position.z = 500;
+  scene.add(camera);
+
+  // This will draw what the camera sees onto the screen:
+  var renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // ******** START CODING ON THE NEXT LINE ********
+  document.body.style.backgroundColor = '#9999aa';
+
+  var scoreboard = new Scoreboard();
+  scoreboard.timer();
+  scoreboard.countdown(10);
+  scoreboard.help(
+    "Get the green ring. " +
+    "Click and drag blue ramps. " +
+    "Click and S to spin. " +
+    "Regular R to restart. " +
+    "Left and right arrows to move player. " +
+    "Be quick!"
+  );
+
+  function makeBorder(x, y, w, h)  {
+    var border = new Physijs.BoxMesh(
+      new THREE.CubeGeometry(w, h, 100),
+      Physijs.createMaterial(
+        new THREE.MeshBasicMaterial({color: 0x000000}), 0.2, 1.0
+      ),
+      0
+    );
+    border.position.set(x, y, 0);
+    return border;
+  }
+  scene.add(makeBorder(width/-2, 0,         50,    height));
+  scene.add(makeBorder(width/2,  0,         50,    height));
+  scene.add(makeBorder(0,        height/-2, width, 50));
+  scene.add(makeBorder(0,        height/2,  width, 50));
+
+  function randomPlusMinus() {
+    return 1 - 2*Math.random();
+  }
+
+  var ramp = {
+    startAt: function(location) {
+      var shape = (Math.random() < 0.5) ?
+        new THREE.CylinderGeometry(5, height * 0.05, height * 0.25):
+        new THREE.CubeGeometry(height * 0.05, height * 0.25, 10);
+
+      this.mesh = new Physijs.ConvexMesh(
+        shape,
+        Physijs.createMaterial(
+          new THREE.MeshBasicMaterial({color:0x0000cc}), 0.2, 1.0
+        ),
+        0
+      );
+      this.setRotation(location.rotation);
+      this.setPosition(location.position[0], location.position[1]);
+      this.addMouseHandler();
+      this.addKeyHandler();
+    },
+    addMouseHandler: function() {
+      var mesh = this.mesh;
+      mesh.addEventListener('drag', function(event) {
+        mesh.position.x = mesh.position.x + event.x_diff;
+        mesh.position.y = mesh.position.y + event.y_diff;
+        mesh.__dirtyRotation = true;
+        mesh.__dirtyPosition = true;
+      });
+    },
+    addKeyHandler: function() {
+      var mesh = this.mesh;
+      document.addEventListener('keypress', function(event) {
+        if (!mesh.isActive) return;
+        if (event.keyCode != 115) return;
+        mesh.rotation.set(0,0,mesh.rotation.z + 0.1);
+        mesh.__dirtyRotation = true;
+        mesh.__dirtyPosition = true;
+      });
+    },
+    setRotation: function(rotation) {
+      this.mesh.rotation.set(0,0,rotation);
+    },
+    setPosition: function(x, y) {
+      this.mesh.position.set(x, y, 0);
+    }
+  };
+
+  var ramp1 = Object.create(ramp);
+  ramp1.startAt({
+    position: [0.4 * width * randomPlusMinus(), 0.4 * height * randomPlusMinus()],
+    rotation: 2*Math.PI * Math.random()
+  });
+  scene.add(ramp1.mesh);
+
+  var ramp2 = Object.create(ramp);
+  ramp2.startAt({
+    position: [0.4 * width * randomPlusMinus(), 0.4 * height * randomPlusMinus()],
+    rotation: 2*Math.PI * Math.random()
+  });
+  scene.add(ramp2.mesh);
+
+  var levels = [];
+  levels[0] = [
+    buildObstacle('platform', 0, 0.3 * height * randomPlusMinus())
+  ];
+  levels[1] = [
+    buildObstacle('platform', 0, 0.6 * height * randomPlusMinus()),
+    buildObstacle('platform', 0, 0.3 * height * randomPlusMinus())
+  ];
+  levels[2] = [
+    buildObstacle('platform', 0, 0.6 * height * randomPlusMinus()),
+    buildObstacle('platform', 0.5 * width * randomPlusMinus(), 0.3 * height * randomPlusMinus()),
+    buildObstacle('stalactite', -0.33 * width, height/2),
+    buildObstacle('stalactite', 0.33 * width, height/2)
+  ];
+
+  function buildObstacle(shape_name, x, y) {
+    var platform_shape = new THREE.CubeGeometry(height/2, height/10, 10),
+        stalactite_shape = new THREE.CylinderGeometry(50, 2, height);
+
+    var shape;
+    if (shape_name == 'platform') {
+      shape = platform_shape;
+    } else {
+      shape = stalactite_shape;
+    }
+
+    var material = Physijs.createMaterial(
+      new THREE.MeshBasicMaterial({color:0x333333}), 0.2, 1.0
+    );
+
+    var obstacle = new Physijs.ConvexMesh(shape, material, 0);
+    obstacle.position.set(x, y, 0);
+    return obstacle;
+  }
+
+  var current_level = 1;
+  function drawCurrentLevel() {
+    scoreboard.resetCountdown(50 - current_level * 10);
+    var obstacles = levels[current_level];
+    obstacles.forEach(function(obstacle) {
+      scene.add(obstacle);
+    });
+  }
+  function eraseLevel(level) {
+    if (level < 0) return;
+    if (level > levels.length-1) return;
+    var obstacles = levels[level];
+    console.log("num obstacles: " + obstacles.length)
+    obstacles.forEach(function(obstacle) {
+      scene.remove(obstacle);
+    });
+  }
+
+  drawCurrentLevel();
+
+  scoreboard.onTimeExpired(function() {
+    scoreboard.setMessage("Game Over!");
+    gameOver();
+  });
+
+  var avatar = new Physijs.ConvexMesh(
+    new THREE.CylinderGeometry(30, 30, 5, 16),
+    Physijs.createMaterial(
+      new THREE.MeshBasicMaterial({color:0xbb0000}), 0.2, 0.5
+    )
+  );
+  avatar.rotation.set(Math.PI/2, 0, 0);
+  avatar.position.set(0.5 * width/-2, -height/2 + 25 + 30, 0);
+  scene.add(avatar);
+
+  avatar.setAngularFactor(new THREE.Vector3( 0, 0, 0 )); // don't rotate
+  avatar.setLinearFactor(new THREE.Vector3( 1, 1, 0 )); // only move on X and Y axis
+
+  avatar.addEventListener('collision', function(object) {
+    if (object.isGoal) levelUp();
+  });
+
+  function levelUp() {
+    if (current_level >= levels.length - 1) return gameOver();
+    eraseLevel(current_level);
+    current_level++;
+    drawCurrentLevel();
+    moveGoal();
+  }
+
+  var goal = new Physijs.ConvexMesh(
+    new THREE.TorusGeometry(90, 5, 5, 16),
+    Physijs.createMaterial(
+      new THREE.MeshBasicMaterial({color:0x00bb00}), 0.2, 0.5
+    ),
+    0
+  );
+  goal.isGoal = true;
+
+  function placeGoal() {
+    var x = 0,
+       rand = Math.random();
+    if (rand < 0.33) x = width / -2;
+    if (rand > 0.66) x = width / 2;
+    goal.position.set(x, height/2, 0);
+    scene.add(goal);
+  }
+  placeGoal();
+
+  function moveGoal() {
+    scene.remove(goal);
+    setTimeout(placeGoal, 2*1000);
+  }
+
+  function gameOver() {
+    if (scoreboard.getTimeRemaining() > 0) scoreboard.setMessage('Win!');
+    scoreboard.stopCountdown();
+    scoreboard.stopTimer();
+    pause = true;
+  }
+
+  var pause = false;
+  function animate() {
+    requestAnimationFrame(animate);
+    if (pause) return;
+    //scene.simulate(); // run physics
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  var game_step_timer;
+  function gameStep() {
+    scene.simulate(); // run physics
+
+    // when moving, process the game logic at a target 60 FPS
+    game_step_timer = setTimeout(gameStep, 1000/60);
+  }
+
+  function waitForStop(just_started) {
+    if (just_started) return setTimeout(waitForStop, 10*1000);
+    if (avatar.getLinearVelocity().length() > 0) return setTimeout(waitForStop, 2*1000);
+
+    clearTimeout(game_step_timer);
+    game_step_timer = null;
+    console.log("stopped!");
+  }
+
+  function startPhysics() {
+    if (game_step_timer) return;
+    gameStep();
+    waitForStop(true);
+  }
+
+  document.addEventListener("keydown", function(event) {
+    var code = event.keyCode;
+    if (code == 37) left();  // left arrow
+    if (code == 39) right(); // right arrow
+    if (code == 80) pause = !pause; // P
+    if (code == 82) gameReset(); // R
+  });
+
+  function left()  { move(-50); }
+  function right() { move(50); }
+
+  function move(x) {
+    var v_y = avatar.getLinearVelocity().y,
+        v_x = avatar.getLinearVelocity().x;
+
+    if (Math.abs(v_x + x) > 200) return;
+    startPhysics();
+    avatar.setLinearVelocity(
+      new THREE.Vector3(v_x + x, v_y, 0)
+    );
+  }
+
+  function gameReset() {
+    pause = false;
+    eraseLevel(current_level);
+    scoreboard.resetTimer();
+    scoreboard.setMessage('');
+    current_level = 0;
+    drawCurrentLevel();
+    moveGoal();
+  }
+</script>

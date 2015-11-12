@@ -1,0 +1,95 @@
+<!--
+ ! Excerpted from "3D Game Programming for Kids",
+ ! published by The Pragmatic Bookshelf.
+ ! Copyrights apply to this code. It may not be used to create training material, 
+ ! courses, books, articles, and the like. Contact us if you are in doubt.
+ ! We make no guarantees that this code is fit for any purpose. 
+ ! Visit http://www.pragmaticprogrammer.com/titles/csjava for more book information.
+-->
+<body></body>
+<script src="http://gamingJS.com/Three.js"></script>
+<script src="http://gamingJS.com/ChromeFixes.js"></script>
+<script>
+  // This is where stuff in our game will happen:
+  var scene = new THREE.Scene();
+
+  // This is what sees the stuff:
+  var aspect_ratio = window.innerWidth / window.innerHeight;
+  var camera = new THREE.PerspectiveCamera(75, aspect_ratio, 1, 10000);
+  camera.position.z = 500;
+  scene.add(camera);
+
+  // This will draw what the camera sees onto the screen:
+  var renderer = new THREE.CanvasRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // ******** START CODING ON THE NEXT LINE ********
+
+  var best_movie = {
+    title: 'Star Wars',
+    year: 1977
+  };
+
+  var best_movie = {
+    title: 'Star Wars',
+    year: 1977,
+    stars: ['Mark Hamill', 'Harrison Ford', 'Carrie Fisher'],
+    aboutMe: function() {
+      console.log(this.title + ', starring: ' + this.stars);
+    }
+  };
+  best_movie.aboutMe();
+  // => Star Wars, starring: Mark Hamill,Harrison Ford,Carrie Fisher
+
+  var great_movie = Object.create(best_movie);
+  great_movie.aboutMe();
+  // => Star Wars, starring: Mark Hamill,Harrison Ford,Carrie Fisher
+
+  great_movie.title = 'Toy Story';
+  great_movie.year = 1995;
+  great_movie.stars = ['Tom Hanks', 'Tim Allen'];
+  great_movie.aboutMe();
+  // => Toy Story, starring: Tom Hanks,Tim Allen
+
+  best_movie.aboutMe();
+  // => Star Wars, starring: Mark Hamill,Harrison Ford,Carrie Fisher
+
+  function Movie(title, stars) {
+    this.title = title;
+    this.stars = stars;
+    this.year = (new Date()).getFullYear();
+  }
+  var kung_fu_movie = new Movie('Kung Fu Panda', ['Jack Black', 'Angelina Jolie']);
+  console.log(kung_fu_movie.title);
+  // => Kung Fu Panda
+  console.log(kung_fu_movie.stars);
+  // => ['Jack Black', 'Angelina Jolie']
+  console.log(kung_fu_movie.year);
+  // => 2013
+
+  Movie.prototype.aboutMe = function() {
+    console.log(this.title + ', starring: ' + this.stars);
+  };
+  kung_fu_movie.aboutMe();
+  // => Kung Fu Panda, starring: Jack Black,Angelina Jolie
+
+
+  var donut = {
+    mesh: new THREE.Mesh(
+      new THREE.TorusGeometry(100, 50, 8, 20),
+      new THREE.MeshBasicMaterial({color: 0x33cc33})
+    ),
+    speed: 1,
+    spin: function() {
+      var mesh = this.mesh;
+      scene.add(mesh);
+
+    }
+  };
+
+
+
+  // Now, show what the camera sees on the screen:
+  renderer.render(scene, camera);
+</script>

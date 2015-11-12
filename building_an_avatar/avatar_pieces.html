@@ -1,0 +1,55 @@
+<!--
+ ! Excerpted from "3D Game Programming for Kids",
+ ! published by The Pragmatic Bookshelf.
+ ! Copyrights apply to this code. It may not be used to create training material, 
+ ! courses, books, articles, and the like. Contact us if you are in doubt.
+ ! We make no guarantees that this code is fit for any purpose. 
+ ! Visit http://www.pragmaticprogrammer.com/titles/csjava for more book information.
+-->
+<body></body>
+<script src="http://gamingJS.com/Three.js"></script>
+<script src="http://gamingJS.com/ChromeFixes.js"></script>
+<script>
+  // This is where stuff in our game will happen:
+  var scene = new THREE.Scene();
+
+  // This is what sees the stuff:
+  var aspect_ratio = window.innerWidth / window.innerHeight;
+  var camera = new THREE.PerspectiveCamera(75, aspect_ratio, 1, 10000);
+  camera.position.z = 500;
+  scene.add(camera);
+
+  // This will draw what the camera sees onto the screen:
+  var renderer = new THREE.CanvasRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // ******** START CODING ON THE NEXT LINE ********
+  var cover = new THREE.MeshNormalMaterial();
+  var body = new THREE.SphereGeometry(100);
+  var avatar = new THREE.Mesh(body, cover);
+  scene.add(avatar);
+
+  var hand = new THREE.SphereGeometry(50);
+
+  var right_hand = new THREE.Mesh(hand, cover);
+  right_hand.position.set(-150, 0, 0);
+  scene.add(right_hand);
+
+  var left_hand = new THREE.Mesh(hand, cover);
+  left_hand.position.set(150, 0, 0);
+  scene.add(left_hand);
+
+  var foot = new THREE.SphereGeometry(50);
+
+  var right_foot = new THREE.Mesh(foot, cover);
+  right_foot.position.set(-75, -125, 0);
+  scene.add(right_foot);
+
+  var left_foot = new THREE.Mesh(foot, cover);
+  left_foot.position.set(75, -125, 0);
+  scene.add(left_foot);
+  
+  // Now, show what the camera sees on the screen:
+  renderer.render(scene, camera);
+</script>

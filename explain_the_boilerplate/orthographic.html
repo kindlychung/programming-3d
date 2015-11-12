@@ -1,0 +1,60 @@
+<!--
+ ! Excerpted from "3D Game Programming for Kids",
+ ! published by The Pragmatic Bookshelf.
+ ! Copyrights apply to this code. It may not be used to create training material, 
+ ! courses, books, articles, and the like. Contact us if you are in doubt.
+ ! We make no guarantees that this code is fit for any purpose. 
+ ! Visit http://www.pragmaticprogrammer.com/titles/csjava for more book information.
+-->
+<body>
+  <h1>Hello!</h1>
+  <p>
+    You can make <b>bold</b> words,
+    <i>italic</i> words,
+    even <u>underlined</u> words.
+  </p>
+  <p>
+    You can link to
+    <a href="http://gamingJS.com">other pages</a>.
+    You can also add images from web servers:
+    <img src="/images/purple_fruit_monster.png">
+  </p>
+</body>
+<script src="http://gamingJS.com/Three.js"></script>
+<script src="http://gamingJS.com/ChromeFixes.js"></script>
+<script>
+    document.body.style.padding = '5px';
+
+  // This is where stuff in our game will happen:
+  var scene = new THREE.Scene();
+
+  // This is what sees the stuff:
+  var aspect_ratio = window.innerWidth / window.innerHeight;
+  var camera = new THREE.PerspectiveCamera(75, aspect_ratio, 1, 10000);
+
+  var width = window.innerWidth,
+      height = window.innerHeight;
+  var camera = new THREE.OrthographicCamera(
+    -width/2, width/2, height/2, -height/2, 1, 10000
+  );
+
+  camera.position.z = 500;
+  scene.add(camera);
+
+  // This will draw what the camera sees onto the screen:
+  var renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // ******** START CODING ON THE NEXT LINE ********
+
+  var shape = new THREE.CubeGeometry(200, 1000, 10);
+  var cover = new THREE.MeshBasicMaterial({color:0x990000});
+  var road = new THREE.Mesh(shape, cover);
+  scene.add(road);
+  road.position.set(0, 400, 0);
+  road.rotation.set(-Math.PI/4, 0, 0);
+
+  // Now, show what the camera sees on the screen:
+  renderer.render(scene, camera);
+</script>

@@ -1,0 +1,51 @@
+<!--
+ ! Excerpted from "3D Game Programming for Kids",
+ ! published by The Pragmatic Bookshelf.
+ ! Copyrights apply to this code. It may not be used to create training material, 
+ ! courses, books, articles, and the like. Contact us if you are in doubt.
+ ! We make no guarantees that this code is fit for any purpose. 
+ ! Visit http://www.pragmaticprogrammer.com/titles/csjava for more book information.
+-->
+<body></body>
+<script src="http://gamingJS.com/Three.js"></script>
+<script src="http://gamingJS.com/ChromeFixes.js"></script>
+<script>
+var log = makeLog();
+logMessage(hello("President Obama"), log);
+logMessage(hello("Mom"), log);
+logMessage(hello("Purple Fruit Monster"), log);
+logMessage(hello("Chris"), log);
+
+/*
+// Missing a curly brace - this won't work!
+function hello(name) {
+  return 'Hello, ' + name + '! You look very pretty today :)';
+
+*/
+
+function hello(name) {
+  return 'Hello, ' + name + '! You look very pretty today :)';
+}
+
+function makeLog() {
+  var holder = document.createElement('div');
+  holder.style.height = '75px';
+  holder.style.width = '450px';
+  holder.style.overflow = 'auto';
+  holder.style.border = '1px solid #666';
+  holder.style.backgroundColor = '#ccc';
+  holder.style.padding = '8px';
+  holder.style.position = 'absolute';
+  holder.style.bottom = '10px';
+  holder.style.right = '20px';
+  document.body.appendChild(holder);
+
+  return holder;
+}
+
+function logMessage(message, log) {
+  var holder = document.createElement('div');
+  holder.textContent = message;
+  log.appendChild(holder);
+}
+</script>
